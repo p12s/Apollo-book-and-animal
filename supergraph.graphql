@@ -1,0 +1,35 @@
+schema
+  @link(url: "https://specs.apollo.dev/link/v1.0")
+  @link(url: "https://specs.apollo.dev/join/v0.3", for: EXECUTION) {
+  query: Query
+}
+
+type Book {
+  id: ID!
+  title: String!
+  author: String!
+  year: Int
+}
+
+type Animal {
+  id: ID!
+  name: String!
+  species: String!
+  age: Int
+  diet: String
+  habitat: String
+  health_status: String
+}
+
+type Query {
+  books: [Book]
+  book(id: ID!): Book
+  animals: [Animal]
+  animal(id: ID!): Animal
+  combinedData(bookId: ID!, animalId: ID!): CombinedResponse
+}
+
+type CombinedResponse {
+  book: Book
+  animal: Animal
+}
