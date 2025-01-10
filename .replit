@@ -11,16 +11,23 @@ run = ["python", "main.py"]
 runButton = "Project"
 
 [[workflows.workflow]]
-name = "Project"
-mode = "parallel"
+name = "Apollo GraphQL Service"
 author = "agent"
 
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
 [[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "Apollo GraphQL Service"
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node server.js"
+waitForPort = 5000
 
 [[workflows.workflow]]
 name = "Apollo GraphQL Service"
+mode = "parallel"
 author = "agent"
 
 [workflows.workflow.metadata]
