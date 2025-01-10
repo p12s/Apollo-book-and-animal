@@ -1,6 +1,6 @@
 # GraphQL Aggregation Service
 
-A GraphQL microservice that combines book and animal data from two authenticated third-party GraphQL services using Apollo Server.
+A sophisticated GraphQL aggregation service that combines book and animal data from authenticated third-party GraphQL services.
 
 ## Features
 
@@ -16,7 +16,7 @@ A GraphQL microservice that combines book and animal data from two authenticated
 
 ## Setup
 
-1. Clone the repository
+1. Clone this repository
 2. Install dependencies:
 ```bash
 npm install
@@ -24,7 +24,7 @@ npm install
 
 ## Environment Variables
 
-The service expects the following authentication tokens for the external services:
+The service requires authentication tokens for the external services:
 
 - Book Service: `Bearer 12345-this-is-secret-token`
 - Animal Service: `Bearer 54321-this-is-secret-token`
@@ -38,21 +38,9 @@ Start the server:
 node server.js
 ```
 
-The service will be available at: `http://localhost:5000`
-- GraphQL Playground: `http://localhost:5000` (root path)
+The service will be available at:
+- GraphQL Playground: `http://localhost:5000`
 - GraphQL Endpoint: `http://localhost:5000/graphql`
-
-## External Services
-
-### Book Service
-- Endpoint: `https://apollo-tracker-socrations.replit.app/api/graphql`
-- Authentication: Bearer token required
-- Available queries: books, book(id)
-
-### Animal Service
-- Endpoint: `https://apollo-animal-socrations.replit.app/graphql`
-- Authentication: Bearer token required
-- Available queries: animals, animal(id)
 
 ## Example Queries
 
@@ -79,7 +67,7 @@ query GetCombinedData {
 }
 ```
 
-### Headers Required
+### Required Headers
 ```json
 {
   "X-Book-Auth": "Bearer 12345-this-is-secret-token",
@@ -87,11 +75,14 @@ query GetCombinedData {
 }
 ```
 
-## Schema
+## External Services
 
-The service provides the following main types:
-- `Book`: Information about books
-- `Animal`: Information about animals
-- `CombinedResponse`: Combined book and animal data
+### Book Service
+- Endpoint: `https://apollo-tracker-socrations.replit.app/api/graphql`
+- Authentication: Bearer token required
+- Available queries: books, book(id)
 
-For detailed schema information, visit the GraphQL Playground interface.
+### Animal Service
+- Endpoint: `https://apollo-animal-socrations.replit.app/graphql`
+- Authentication: Bearer token required
+- Available queries: animals, animal(id)
