@@ -1,0 +1,10 @@
+federation_version: 2
+subgraphs:
+  books:
+    routing_url: https://apollo-tracker-socrations.replit.app/api/graphql
+    schema:
+      subgraph_url: https://apollo-tracker-socrations.replit.app/api/graphql
+  animals:
+    routing_url: https://apollo-animal-socrations.replit.app/graphql
+    schema:
+      subgraph_url: https://apollo-animal-socrations.replit.app/graphql
