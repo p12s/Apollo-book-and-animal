@@ -1,3 +1,7 @@
+schema {
+  query: Query
+}
+
 type Book {
   id: ID!
   title: String!

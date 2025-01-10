@@ -207,7 +207,6 @@ async function startApolloServer() {
         }),
     );
 
-    // Add GraphQL Playground interface at root
     app.get('/', (req, res) => {
         res.send(`
             <!DOCTYPE html>
