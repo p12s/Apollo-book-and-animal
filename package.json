@@ -11,6 +11,7 @@
   "description": "",
   "dependencies": {
     "@apollo/composition": "^2.9.3",
+    "@apollo/datasource-rest": "^6.4.1",
     "@apollo/gateway": "^2.9.3",
     "@apollo/server": "^4.11.3",
     "body-parser": "^1.20.3",
