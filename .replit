@@ -1,3 +1,4 @@
+
 modules = ["python-3.11", "nodejs-20"]
 
 [nix]
@@ -5,7 +6,7 @@ channel = "stable-24_05"
 
 [deployment]
 deploymentTarget = "autoscale"
-run = ["python", "main.py"]
+run = ["node", "server.js"]
 
 [workflows]
 runButton = "Project"
