@@ -6,9 +6,12 @@ class BookAPI extends RESTDataSource {
     this.baseURL = 'https://apollo-tracker-socrations.replit.app/api/';
   }
 
-  willSendRequest(request) {
-    const token = this.context.bookAuth;
-    request.headers.set('Authorization', `Bearer ${token}`);
+  willSendRequest(_path, request) {
+    const token = this.context?.bookAuth;
+    if (!request.headers) {
+      request.headers = {};
+    }
+    request.headers['Authorization'] = `Bearer ${token}`;
   }
 
   async getBooks() {

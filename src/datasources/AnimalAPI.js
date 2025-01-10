@@ -6,9 +6,12 @@ class AnimalAPI extends RESTDataSource {
     this.baseURL = 'https://apollo-animal-socrations.replit.app/';
   }
 
-  willSendRequest(request) {
-    const token = this.context.animalAuth;
-    request.headers.set('Authorization', `Bearer ${token}`);
+  willSendRequest(_path, request) {
+    const token = this.context?.animalAuth;
+    if (!request.headers) {
+      request.headers = {};
+    }
+    request.headers['Authorization'] = `Bearer ${token}`;
   }
 
   async getAnimals() {
