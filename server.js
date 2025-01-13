@@ -1,13 +1,54 @@
 const { ApolloServer } = require('@apollo/server');
 const { expressMiddleware } = require('@apollo/server/express4');
 const { ApolloServerPluginDrainHttpServer } = require('@apollo/server/plugin/drainHttpServer');
+const { RESTDataSource } = require('@apollo/datasource-rest');
 const express = require('express');
 const http = require('http');
 const cors = require('cors');
 const { json } = require('body-parser');
 const { readFileSync } = require('fs');
-const { buildSubgraphSchema } = require('@apollo/subgraph');
-const { parse } = require('graphql');
+
+class MovieAPI extends RESTDataSource {
+  baseURL = 'https://movie-tracker-socrations.replit.app/api/movies';
+
+  constructor() {
+    super();
+    this.baseURL = 'https://movie-tracker-socrations.replit.app/api/movies';
+  }
+
+  willSendRequest(request) {
+    request.headers['Authorization'] = 'Bearer 12345-this-is-secret-token';
+  }
+
+  async getMovie(id) {
+    const data = await this.get(`/${id}`);
+    return {
+      id: data.id,
+      name: data.title,
+      brand: data.director,
+      year: data.year,
+      description: data.genre,
+      imageUrl: data.posterUrl
+    };
+  }
+}
+
+class SmartphoneAPI extends RESTDataSource {
+  baseURL = 'https://smartphone-rest-socrations.replit.app/api/smartphones';
+
+  constructor() {
+    super();
+    this.baseURL = 'https://smartphone-rest-socrations.replit.app/api/smartphones';
+  }
+
+  willSendRequest(request) {
+    request.headers['Authorization'] = 'Bearer 54321-this-is-secret-token';
+  }
+
+  async getSmartphone(id) {
+    return this.get(`/${id}`);
+  }
+}
 
 // Read schema file
 try {
@@ -22,29 +63,38 @@ try {
       const httpServer = http.createServer(app);
 
       const server = new ApolloServer({
-        schema: buildSubgraphSchema([{
-          typeDefs: parse(typeDefs),
-          resolvers: {
-            Query: {
-              combinedData2: async (_, { movieId, smartphoneId }, context) => {
-                try {
-                  const [movieResponse, smartphoneResponse] = await Promise.all([
-                    context.movie(movieId),
-                    context.smartphone(smartphoneId)
-                  ]);
-
-                  return {
-                    movie: movieResponse,
-                    smartphone: smartphoneResponse
-                  };
-                } catch (error) {
-                  console.error('Error in combinedData2:', error);
-                  throw error;
-                }
-              }
+        typeDefs,
+        resolvers: {
+          Query: {
+            movies: async (_, __, { dataSources }) => {
+              const response = await dataSources.movieAPI.get('');
+              return response.map(movie => ({
+                id: movie.id,
+                name: movie.title,
+                brand: movie.director,
+                year: movie.year,
+                description: movie.genre,
+                imageUrl: movie.posterUrl
+              }));
+            },
+            movie: async (_, { id }, { dataSources }) => {
+              return dataSources.movieAPI.getMovie(id);
+            },
+            smartphones: async (_, __, { dataSources }) => {
+              return dataSources.smartphoneAPI.get('');
+            },
+            smartphone: async (_, { id }, { dataSources }) => {
+              return dataSources.smartphoneAPI.getSmartphone(id);
+            },
+            combinedData2: async (_, { movieId, smartphoneId }, { dataSources }) => {
+              const [movie, smartphone] = await Promise.all([
+                dataSources.movieAPI.getMovie(movieId),
+                dataSources.smartphoneAPI.getSmartphone(smartphoneId)
+              ]);
+              return { movie, smartphone };
             }
           }
-        }]),
+        },
         plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
         introspection: true,
       });
@@ -57,7 +107,14 @@ try {
         '/graphql',
         cors(),
         json(),
-        expressMiddleware(server)
+        expressMiddleware(server, {
+          context: async () => ({
+            dataSources: {
+              movieAPI: new MovieAPI(),
+              smartphoneAPI: new SmartphoneAPI()
+            }
+          })
+        })
       );
 
       app.get('/', (req, res) => {

@@ -1,31 +1,4 @@
-extend schema
-  @link(url: "https://specs.apollo.dev/federation/v2.0")
-  @link(
-    url: "https://specs.apollo.dev/connect/v0.1"
-    import: ["@connect", "@source"]
-  )
-
-@source(
-  name: "movieService"
-  http: {
-    baseURL: "https://movie-tracker-socrations.replit.app/api/movies"
-    headers: [
-      { name: "Authorization", value: "Bearer 12345-this-is-secret-token" }
-    ]
-  }
-)
-
-@source(
-  name: "smartphoneService"
-  http: {
-    baseURL: "https://smartphone-rest-socrations.replit.app/api/smartphones"
-    headers: [
-      { name: "Authorization", value: "Bearer 54321-this-is-secret-token" }
-    ]
-  }
-)
-
-type Movie @key(fields: "id") {
+type Movie {
   id: ID!
   name: String!
   brand: String!
@@ -34,7 +7,7 @@ type Movie @key(fields: "id") {
   imageUrl: String
 }
 
-type Smartphone @key(fields: "id") {
+type Smartphone {
   id: ID!
   name: String!
   brand: String!
@@ -51,62 +24,8 @@ type CombinedResponse2 {
 
 type Query {
   movies: [Movie]
-    @connect(
-      source: "movieService"
-      http: { GET: "/" }
-      selection: """
-      id
-      name: title
-      brand: director
-      year
-      description: genre
-      imageUrl: posterUrl
-      """
-    )
-
   movie(id: ID!): Movie
-    @connect(
-      source: "movieService"
-      http: { GET: "/{args.id}" }
-      selection: """
-      id
-      name: title
-      brand: director
-      year
-      description: genre
-      imageUrl: posterUrl
-      """
-    )
-
   smartphones: [Smartphone]
-    @connect(
-      source: "smartphoneService"
-      http: { GET: "/" }
-      selection: """
-      id
-      name
-      brand
-      model
-      year
-      price
-      specs
-      """
-    )
-
   smartphone(id: ID!): Smartphone
-    @connect(
-      source: "smartphoneService"
-      http: { GET: "/{args.id}" }
-      selection: """
-      id
-      name
-      brand
-      model
-      year
-      price
-      specs
-      """
-    )
-
   combinedData2(movieId: ID!, smartphoneId: ID!): CombinedResponse2
 }
