@@ -1,10 +1,10 @@
 # GraphQL Aggregation Service
 
-A sophisticated GraphQL aggregation service that combines book and animal data from authenticated third-party GraphQL services.
+A sophisticated GraphQL aggregation service that combines movie and smartphone data from authenticated third-party services.
 
 ## Features
 
-- Unified GraphQL endpoint for querying both books and animals
+- Unified GraphQL endpoint for querying both movies and smartphones
 - Bearer token authentication for both services
 - Combined data queries
 - Interactive GraphQL Playground interface
@@ -26,8 +26,8 @@ npm install
 
 The service requires authentication tokens for the external services:
 
-- Book Service: `Bearer 12345-this-is-secret-token`
-- Animal Service: `Bearer 54321-this-is-secret-token`
+- Movie Service: `Bearer 12345-this-is-secret-token`
+- Smartphone Service: `Bearer 54321-this-is-secret-token`
 
 These are already configured in the GraphQL Playground interface.
 
@@ -47,21 +47,23 @@ The service will be available at:
 ### Combined Query
 ```graphql
 query GetCombinedData {
-  combinedData(bookId: "1", animalId: 3) {
-    book {
-      id
-      title
-      author
-      year
-    }
-    animal {
+  combinedData2(movieId: "1", smartphoneId: "3") {
+    movie {
       id
       name
-      species
-      age
-      diet
-      habitat
-      health_status
+      brand
+      year
+      description
+      imageUrl
+    }
+    smartphone {
+      id
+      name
+      brand
+      model
+      year
+      price
+      specs
     }
   }
 }
@@ -70,19 +72,19 @@ query GetCombinedData {
 ### Required Headers
 ```json
 {
-  "X-Book-Auth": "Bearer 12345-this-is-secret-token",
-  "X-Animal-Auth": "Bearer 54321-this-is-secret-token"
+  "X-Movie-Auth": "Bearer 12345-this-is-secret-token",
+  "X-Smartphone-Auth": "Bearer 54321-this-is-secret-token"
 }
 ```
 
 ## External Services
 
-### Book Service
-- Endpoint: `https://apollo-tracker-socrations.replit.app/api/graphql`
+### Movie Service
+- Endpoint: `https://movie-tracker-socrations.replit.app/api/movies`
 - Authentication: Bearer token required
-- Available queries: books, book(id)
+- Available queries: movie(id)
 
-### Animal Service
-- Endpoint: `https://apollo-animal-socrations.replit.app/graphql`
+### Smartphone Service
+- Endpoint: `https://smartphone-rest-socrations.replit.app/api/smartphones`
 - Authentication: Bearer token required
-- Available queries: animals, animal(id)
+- Available queries: smartphone(id)
