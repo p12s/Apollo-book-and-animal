@@ -1,46 +1,27 @@
 const { ApolloServer } = require('@apollo/server');
 const { expressMiddleware } = require('@apollo/server/express4');
+const { ApolloGateway } = require('@apollo/gateway');
 const { ApolloServerPluginDrainHttpServer } = require('@apollo/server/plugin/drainHttpServer');
-const { ApolloGateway, RemoteGraphQLDataSource } = require('@apollo/gateway');
-const { readFileSync } = require('fs');
 const express = require('express');
 const http = require('http');
 const cors = require('cors');
 const { json } = require('body-parser');
+const { readFileSync } = require('fs');
 
-const supergraphSdl = readFileSync('./supergraph.graphql', 'utf8');
+const typeDefs = readFileSync('./supergraph.graphql', 'utf8');
 
 async function startApolloServer() {
     const app = express();
     const httpServer = http.createServer(app);
 
     const gateway = new ApolloGateway({
-        supergraphSdl,
-        experimental_enableConnectSupport: true,
-        buildService: ({ name }) => {
-            return new RemoteGraphQLDataSource({
-                willSendRequest({ request, context }) {
-                    if (name === 'bookService' && context.bookAuth) {
-                        request.http.headers.set('Authorization', `Bearer ${context.bookAuth}`);
-                    }
-                    if (name === 'animalService' && context.animalAuth) {
-                        request.http.headers.set('Authorization', `Bearer ${context.animalAuth}`);
-                    }
-                    if (name === 'movieService') {
-                        request.http.headers.set('Authorization', 'Bearer 12345-this-is-secret-token');
-                    }
-                    if (name === 'smartphoneService') {
-                        request.http.headers.set('Authorization', 'Bearer 54321-this-is-secret-token');
-                    }
-                }
-            });
-        }
+        supergraphSdl: typeDefs,
     });
 
     const server = new ApolloServer({
         gateway,
-        introspection: true,
         plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+        introspection: true
     });
 
     await server.start();
@@ -52,9 +33,9 @@ async function startApolloServer() {
         expressMiddleware(server, {
             context: async ({ req }) => ({
                 bookAuth: req.headers['x-book-auth']?.replace('Bearer ', '') || '',
-                animalAuth: req.headers['x-animal-auth']?.replace('Bearer ', '') || '',
-            }),
-        }),
+                animalAuth: req.headers['x-animal-auth']?.replace('Bearer ', '') || ''
+            })
+        })
     );
 
     app.get('/', (req, res) => {
