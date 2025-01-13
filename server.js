@@ -20,20 +20,36 @@ try {
   process.exit(1);
 }
 
+// Define resolvers with proper error handling
 const resolvers = {
   Query: {
     movie: async (_, { id }, { dataSources }) => {
-      return dataSources.movieAPI.getMovie(id);
+      try {
+        return await dataSources.movieAPI.getMovie(id);
+      } catch (error) {
+        console.error(`Resolver error fetching movie ${id}:`, error);
+        throw error;
+      }
     },
     smartphone: async (_, { id }, { dataSources }) => {
-      return dataSources.smartphoneAPI.getSmartphone(id);
+      try {
+        return await dataSources.smartphoneAPI.getSmartphone(id);
+      } catch (error) {
+        console.error(`Resolver error fetching smartphone ${id}:`, error);
+        throw error;
+      }
     },
     combinedData2: async (_, { movieId, smartphoneId }, { dataSources }) => {
-      const [movie, smartphone] = await Promise.all([
-        dataSources.movieAPI.getMovie(movieId),
-        dataSources.smartphoneAPI.getSmartphone(smartphoneId)
-      ]);
-      return { movie, smartphone };
+      try {
+        const [movie, smartphone] = await Promise.all([
+          dataSources.movieAPI.getMovie(movieId),
+          dataSources.smartphoneAPI.getSmartphone(smartphoneId)
+        ]);
+        return { movie, smartphone };
+      } catch (error) {
+        console.error(`Resolver error fetching combined data:`, error);
+        throw error;
+      }
     }
   }
 };
@@ -44,6 +60,7 @@ async function startApolloServer() {
     const app = express();
     const httpServer = http.createServer(app);
 
+    // Initialize Apollo Server with enhanced configuration
     const server = new ApolloServer({
       typeDefs,
       resolvers,
@@ -51,7 +68,11 @@ async function startApolloServer() {
       introspection: true,
       formatError: (error) => {
         console.error('GraphQL Error:', error);
-        return error;
+        return {
+          message: error.message,
+          path: error.path,
+          extensions: error.extensions
+        };
       }
     });
 
@@ -59,24 +80,28 @@ async function startApolloServer() {
     await server.start();
     console.log('Apollo Server started successfully');
 
+    // Configure middleware with proper context
     app.use(
       '/graphql',
       cors(),
       json(),
       expressMiddleware(server, {
-        context: async () => ({
+        context: async ({ req }) => ({
           dataSources: {
             movieAPI: new MovieAPI(),
             smartphoneAPI: new SmartphoneAPI()
-          }
+          },
+          token: req.headers.authorization
         })
       })
     );
 
+    // Redirect root to GraphQL playground
     app.get('/', (req, res) => {
       res.redirect('/graphql');
     });
 
+    // Start the server
     await new Promise((resolve) => httpServer.listen({ port: 5000, host: '0.0.0.0' }, resolve));
     console.log(`🚀 Server ready at http://localhost:5000/graphql`);
   } catch (error) {
@@ -85,6 +110,7 @@ async function startApolloServer() {
   }
 }
 
+// Start server with proper error handling
 startApolloServer().catch(error => {
   console.error('Unhandled server error:', error);
   process.exit(1);

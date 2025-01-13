@@ -3,21 +3,26 @@ const { RESTDataSource } = require('@apollo/datasource-rest');
 class SmartphoneAPI extends RESTDataSource {
   constructor() {
     super();
+    // Base URL for the smartphone service
     this.baseURL = 'https://smartphone-rest-socrations.replit.app/api/smartphones/';
-    this.httpHeaders = {
-      'Authorization': 'Bearer 54321-this-is-secret-token'
-    };
   }
 
-  willSendRequest(_path, request) {
-    request.headers = this.httpHeaders;
+  // Override willSendRequest to add authentication
+  willSendRequest(path, request) {
+    request.headers['Authorization'] = 'Bearer 54321-this-is-secret-token';
   }
 
+  // Get a single smartphone by ID
   async getSmartphone(id) {
     try {
-      const response = await this.get(`${id}`);
+      // Use the new get method with proper error handling
+      const response = await this.get(`${id}`, {
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
 
-      // Ensure we have the required fields and they're not null
+      // Validate response
       if (!response || !response.name || !response.brand) {
         throw new Error(`Smartphone with ID ${id} not found or incomplete data`);
       }

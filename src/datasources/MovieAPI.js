@@ -3,34 +3,39 @@ const { RESTDataSource } = require('@apollo/datasource-rest');
 class MovieAPI extends RESTDataSource {
   constructor() {
     super();
+    // Base URL for the movie service
     this.baseURL = 'https://movie-tracker-socrations.replit.app/api/movies';
-    this.httpHeaders = {
-      'Authorization': 'Bearer 12345-this-is-secret-token'
-    };
   }
 
-  willSendRequest(_path, request) {
-    request.headers = this.httpHeaders;
+  // Override willSendRequest to add authentication
+  willSendRequest(path, request) {
+    request.headers['Authorization'] = 'Bearer 12345-this-is-secret-token';
   }
 
+  // Get a single movie by ID
   async getMovie(id) {
     try {
       console.log(`Fetching movie with ID: ${id}`);
-      const response = await this.get(`/${id}`);
-      console.log('Movie API Response:', response);
+
+      // Use the new get method with proper error handling
+      const response = await this.get(`/${id}`, {
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
 
       if (!response) {
         throw new Error(`No response received for movie ID ${id}`);
       }
 
-      // Transform the response to match our new schema
+      // Transform and validate the response
       return {
         id: response.id || id,
-        name: response.title || 'Unknown Movie', // Map title to name
-        brand: response.director || 'Unknown Brand', // Map director to brand
+        name: response.title || 'Unknown Movie',
+        brand: response.director || 'Unknown Brand',
         year: response.year || new Date().getFullYear(),
-        description: response.genre || null, // Map genre to description
-        imageUrl: response.posterUrl || null // Add imageUrl if available
+        description: response.genre || null,
+        imageUrl: response.posterUrl || null
       };
     } catch (error) {
       console.error(`Error fetching movie ${id}:`, error);
