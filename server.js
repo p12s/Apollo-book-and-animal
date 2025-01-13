@@ -17,7 +17,10 @@ class MovieAPI extends RESTDataSource {
   }
 
   willSendRequest(path, request) {
-    request.headers.set('Authorization', 'Bearer 12345-this-is-secret-token');
+    request.headers = {
+      ...request.headers,
+      'Authorization': 'Bearer 12345-this-is-secret-token'
+    };
   }
 
   async getMovie(id) {
@@ -54,7 +57,10 @@ class SmartphoneAPI extends RESTDataSource {
   }
 
   willSendRequest(path, request) {
-    request.headers.set('Authorization', 'Bearer 54321-this-is-secret-token');
+    request.headers = {
+      ...request.headers,
+      'Authorization': 'Bearer 54321-this-is-secret-token'
+    };
   }
 
   async getSmartphone(id) {
