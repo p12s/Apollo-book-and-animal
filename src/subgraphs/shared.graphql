@@ -1,8 +1,0 @@
-type CombinedResponse2 {
-  movie: Movie
-  smartphone: Smartphone
-}
-
-extend type Query {
-  combinedData2(movieId: ID!, smartphoneId: ID!): CombinedResponse2
-}
