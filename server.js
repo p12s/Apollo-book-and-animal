@@ -10,7 +10,7 @@ const MovieAPI = require('./src/datasources/MovieAPI');
 const SmartphoneAPI = require('./src/datasources/SmartphoneAPI');
 
 // Read schema from file
-const typeDefs = readFileSync('./graph.graphql', 'utf8');
+const typeDefs = readFileSync('./schema.graphql', 'utf8');
 
 const resolvers = {
   Query: {
