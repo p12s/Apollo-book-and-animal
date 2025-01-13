@@ -38,7 +38,11 @@ async function startApolloServer() {
     typeDefs,
     resolvers,
     plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
-    introspection: true
+    introspection: true,
+    formatError: (error) => {
+      console.error('GraphQL Error:', error);
+      return error;
+    }
   });
 
   await server.start();

@@ -1,10 +1,10 @@
 type Movie {
   id: ID!
-  title: String!
-  director: String
+  name: String!
+  brand: String!
   year: Int!
-  genre: String
-  rating: Float
+  description: String
+  imageUrl: String
 }
 
 type Smartphone {
