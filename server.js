@@ -63,12 +63,26 @@ class SmartphoneAPI extends RESTDataSource {
     };
   }
 
+  formatSmartphone(data) {
+    return {
+      id: data.id,
+      name: data.name || 'Unknown Name',
+      brand: data.manufacturer || 'Unknown Brand', // Ensure brand is never null
+      model: data.model,
+      year: data.releaseYear || new Date().getFullYear(),
+      price: parseFloat(data.price) || 0.0,
+      specs: data.specifications || ''
+    };
+  }
+
   async getSmartphone(id) {
-    return this.get(`/${id}`);
+    const data = await this.get(`/${id}`);
+    return this.formatSmartphone(data);
   }
 
   async getSmartphones() {
-    return this.get('/');
+    const response = await this.get('/');
+    return response.map(phone => this.formatSmartphone(phone));
   }
 }
 
