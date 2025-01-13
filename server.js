@@ -1,65 +1,44 @@
 const { ApolloServer } = require('@apollo/server');
 const { expressMiddleware } = require('@apollo/server/express4');
 const { ApolloServerPluginDrainHttpServer } = require('@apollo/server/plugin/drainHttpServer');
+const { ApolloGateway, RemoteGraphQLDataSource } = require('@apollo/gateway');
+const { readFileSync } = require('fs');
 const express = require('express');
 const http = require('http');
 const cors = require('cors');
 const { json } = require('body-parser');
-const { readFileSync } = require('fs');
 
-const BookAPI = require('./src/datasources/BookAPI');
-const AnimalAPI = require('./src/datasources/AnimalAPI');
-const MovieAPI = require('./src/datasources/MovieAPI');
-const SmartphoneAPI = require('./src/datasources/SmartphoneAPI');
-
-const typeDefs = readFileSync('./supergraph.graphql', 'utf8');
-
-const resolvers = {
-    Query: {
-        books: async (_, __, { dataSources }) => {
-            return dataSources.bookAPI.getBooks();
-        },
-        book: async (_, { id }, { dataSources }) => {
-            return dataSources.bookAPI.getBook(id);
-        },
-        animals: async (_, __, { dataSources }) => {
-            return dataSources.animalAPI.getAnimals();
-        },
-        animal: async (_, { id }, { dataSources }) => {
-            return dataSources.animalAPI.getAnimal(id);
-        },
-        combinedData: async (_, { bookId, animalId }, { dataSources }) => {
-            const [book, animal] = await Promise.all([
-                dataSources.bookAPI.getBook(bookId),
-                dataSources.animalAPI.getAnimal(animalId)
-            ]);
-
-            return {
-                book,
-                animal
-            };
-        },
-        combinedData2: async (_, { movieId, smartphoneId }, { dataSources }) => {
-            const [movie, smartphone] = await Promise.all([
-                dataSources.movieAPI.getMovie(movieId),
-                dataSources.smartphoneAPI.getSmartphone(smartphoneId)
-            ]);
-
-            return {
-                movie,
-                smartphone
-            };
-        },
-    },
-};
+const supergraphSdl = readFileSync('./supergraph.graphql', 'utf8');
 
 async function startApolloServer() {
     const app = express();
     const httpServer = http.createServer(app);
 
+    const gateway = new ApolloGateway({
+        supergraphSdl,
+        experimental_enableConnectSupport: true,
+        buildService: ({ name }) => {
+            return new RemoteGraphQLDataSource({
+                willSendRequest({ request, context }) {
+                    if (name === 'bookService' && context.bookAuth) {
+                        request.http.headers.set('Authorization', `Bearer ${context.bookAuth}`);
+                    }
+                    if (name === 'animalService' && context.animalAuth) {
+                        request.http.headers.set('Authorization', `Bearer ${context.animalAuth}`);
+                    }
+                    if (name === 'movieService') {
+                        request.http.headers.set('Authorization', 'Bearer 12345-this-is-secret-token');
+                    }
+                    if (name === 'smartphoneService') {
+                        request.http.headers.set('Authorization', 'Bearer 54321-this-is-secret-token');
+                    }
+                }
+            });
+        }
+    });
+
     const server = new ApolloServer({
-        typeDefs,
-        resolvers,
+        gateway,
         introspection: true,
         plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
     });
@@ -71,26 +50,10 @@ async function startApolloServer() {
         cors(),
         json(),
         expressMiddleware(server, {
-            context: async ({ req }) => {
-                const dataSources = {
-                    bookAPI: new BookAPI(),
-                    animalAPI: new AnimalAPI(),
-                    movieAPI: new MovieAPI(),
-                    smartphoneAPI: new SmartphoneAPI(),
-                };
-
-                // Set authentication tokens for each service
-                dataSources.bookAPI.context = { 
-                    bookAuth: req.headers['x-book-auth']?.replace('Bearer ', '') || ''
-                };
-                dataSources.animalAPI.context = { 
-                    animalAuth: req.headers['x-animal-auth']?.replace('Bearer ', '') || ''
-                };
-
-                return {
-                    dataSources,
-                };
-            },
+            context: async ({ req }) => ({
+                bookAuth: req.headers['x-book-auth']?.replace('Bearer ', '') || '',
+                animalAuth: req.headers['x-animal-auth']?.replace('Bearer ', '') || '',
+            }),
         }),
     );
 
@@ -102,4 +65,4 @@ async function startApolloServer() {
     console.log(`🚀 Server ready at http://localhost:5000/graphql`);
 }
 
-startApolloServer();
+startApolloServer().catch(console.error);

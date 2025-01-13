@@ -1,15 +1,51 @@
-schema {
+schema
+  @link(url: "https://specs.apollo.dev/federation/v2.0",
+        import: ["@key", "@shareable"])
+  @link(url: "https://specs.apollo.dev/connect/v0.2",
+        import: ["@connect", "@source"]) {
   query: Query
+
+  @source(
+    name: "bookService"
+    url: "https://apollo-tracker-socrations.replit.app/api/graphql"
+    headers: [
+      { name: "Authorization", value: "{context.bookAuth}" }
+    ]
+  )
+
+  @source(
+    name: "animalService"
+    url: "https://apollo-animal-socrations.replit.app/graphql"
+    headers: [
+      { name: "Authorization", value: "{context.animalAuth}" }
+    ]
+  )
+
+  @source(
+    name: "movieService"
+    url: "https://movie-tracker-socrations.replit.app/api/movies/search"
+    headers: [
+      { name: "Authorization", value: "Bearer 12345-this-is-secret-token" }
+    ]
+  )
+
+  @source(
+    name: "smartphoneService"
+    url: "https://smartphone-rest-socrations.replit.app/api/smartphones"
+    headers: [
+      { name: "Authorization", value: "Bearer 54321-this-is-secret-token" }
+    ]
+  )
 }
 
-type Book {
+type Book @shareable {
   id: ID!
   title: String!
   author: String!
   year: Int
 }
 
-type Animal {
+type Animal @shareable {
   id: ID!
   name: String!
   species: String!
@@ -19,7 +55,7 @@ type Animal {
   health_status: String
 }
 
-type Movie {
+type Movie @shareable {
   id: ID!
   name: String!
   brand: String!
@@ -28,7 +64,7 @@ type Movie {
   imageUrl: String
 }
 
-type Smartphone {
+type Smartphone @shareable {
   id: ID!
   name: String!
   brand: String!
@@ -40,9 +76,41 @@ type Smartphone {
 
 type Query {
   books: [Book]
+    @connect(source: "bookService", http: { 
+      POST: "/graphql",
+      body: """
+        query { books { id title author year } }
+      """
+    })
   book(id: ID!): Book
+    @connect(source: "bookService", http: { 
+      POST: "/graphql",
+      body: """
+        query($id: ID!) { book(id: $id) { id title author year } }
+      """
+    })
   animals: [Animal]
+    @connect(source: "animalService", http: { 
+      POST: "/graphql",
+      body: """
+        query { animals { id name species age diet habitat health_status } }
+      """
+    })
   animal(id: ID!): Animal
+    @connect(source: "animalService", http: { 
+      POST: "/graphql",
+      body: """
+        query($id: Int!) { animal(id: $id) { id name species age diet habitat health_status } }
+      """
+    })
+  movie(id: ID!): Movie
+    @connect(source: "movieService", http: { 
+      GET: "/movies/search/{args.id}"
+    })
+  smartphone(id: ID!): Smartphone
+    @connect(source: "smartphoneService", http: { 
+      GET: "/smartphones/{args.id}"
+    })
   combinedData(bookId: ID!, animalId: ID!): CombinedResponse
   combinedData2(movieId: ID!, smartphoneId: ID!): CombinedResponse2
 }

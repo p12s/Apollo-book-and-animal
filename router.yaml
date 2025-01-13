@@ -3,8 +3,16 @@ subgraphs:
   books:
     routing_url: https://apollo-tracker-socrations.replit.app/api/graphql
     schema:
-      subgraph_url: https://apollo-tracker-socrations.replit.app/api/graphql
+      url: https://apollo-tracker-socrations.replit.app/api/graphql
   animals:
     routing_url: https://apollo-animal-socrations.replit.app/graphql
     schema:
-      subgraph_url: https://apollo-animal-socrations.replit.app/graphql
+      url: https://apollo-animal-socrations.replit.app/graphql
+  movies:
+    routing_url: https://movie-tracker-socrations.replit.app/api/movies/search
+    schema:
+      url: https://movie-tracker-socrations.replit.app/api/movies/search
+  smartphones:
+    routing_url: https://smartphone-rest-socrations.replit.app/api/smartphones
+    schema:
+      url: https://smartphone-rest-socrations.replit.app/api/smartphones

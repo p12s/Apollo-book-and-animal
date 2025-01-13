@@ -42,6 +42,15 @@ task = "shell.exec"
 args = "node server.js"
 waitForPort = 5000
 
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Apollo GraphQL Service"
+
 [[ports]]
 localPort = 5000
 externalPort = 80
