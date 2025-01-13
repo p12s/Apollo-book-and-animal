@@ -21,7 +21,7 @@ class MovieAPI extends RESTDataSource {
   }
 
   async getMovie(id) {
-    const data = await this.get(`/${id}`);
+    const data = await this.get(`/search/${id}`);
     return {
       id: data.id,
       name: data.title,
@@ -30,6 +30,18 @@ class MovieAPI extends RESTDataSource {
       description: data.genre,
       imageUrl: data.posterUrl
     };
+  }
+
+  async getMovies() {
+    const response = await this.get(`/search`);
+    return response.map(movie => ({
+      id: movie.id,
+      name: movie.title,
+      brand: movie.director,
+      year: movie.year,
+      description: movie.genre,
+      imageUrl: movie.posterUrl
+    }));
   }
 }
 
@@ -47,6 +59,10 @@ class SmartphoneAPI extends RESTDataSource {
 
   async getSmartphone(id) {
     return this.get(`/${id}`);
+  }
+
+  async getSmartphones() {
+    return this.get('/');
   }
 }
 
@@ -67,21 +83,13 @@ try {
         resolvers: {
           Query: {
             movies: async (_, __, { dataSources }) => {
-              const response = await dataSources.movieAPI.get('');
-              return response.map(movie => ({
-                id: movie.id,
-                name: movie.title,
-                brand: movie.director,
-                year: movie.year,
-                description: movie.genre,
-                imageUrl: movie.posterUrl
-              }));
+              return dataSources.movieAPI.getMovies();
             },
             movie: async (_, { id }, { dataSources }) => {
               return dataSources.movieAPI.getMovie(id);
             },
             smartphones: async (_, __, { dataSources }) => {
-              return dataSources.smartphoneAPI.get('');
+              return dataSources.smartphoneAPI.getSmartphones();
             },
             smartphone: async (_, { id }, { dataSources }) => {
               return dataSources.smartphoneAPI.getSmartphone(id);
