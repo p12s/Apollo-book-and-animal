@@ -9,8 +9,16 @@ const { readFileSync } = require('fs');
 const MovieAPI = require('./src/datasources/MovieAPI');
 const SmartphoneAPI = require('./src/datasources/SmartphoneAPI');
 
-// Read schema from file
-const typeDefs = readFileSync('./schema.graphql', 'utf8');
+// Enhanced error handling for schema reading
+let typeDefs;
+try {
+  console.log('Reading schema file...');
+  typeDefs = readFileSync('./schema.graphql', 'utf8');
+  console.log('Schema file loaded successfully');
+} catch (error) {
+  console.error('Error reading schema file:', error);
+  process.exit(1);
+}
 
 const resolvers = {
   Query: {
@@ -31,42 +39,53 @@ const resolvers = {
 };
 
 async function startApolloServer() {
-  const app = express();
-  const httpServer = http.createServer(app);
+  try {
+    console.log('Initializing Apollo Server...');
+    const app = express();
+    const httpServer = http.createServer(app);
 
-  const server = new ApolloServer({
-    typeDefs,
-    resolvers,
-    plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
-    introspection: true,
-    formatError: (error) => {
-      console.error('GraphQL Error:', error);
-      return error;
-    }
-  });
+    const server = new ApolloServer({
+      typeDefs,
+      resolvers,
+      plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+      introspection: true,
+      formatError: (error) => {
+        console.error('GraphQL Error:', error);
+        return error;
+      }
+    });
 
-  await server.start();
+    console.log('Starting Apollo Server...');
+    await server.start();
+    console.log('Apollo Server started successfully');
 
-  app.use(
-    '/graphql',
-    cors(),
-    json(),
-    expressMiddleware(server, {
-      context: async () => ({
-        dataSources: {
-          movieAPI: new MovieAPI(),
-          smartphoneAPI: new SmartphoneAPI()
-        }
+    app.use(
+      '/graphql',
+      cors(),
+      json(),
+      expressMiddleware(server, {
+        context: async () => ({
+          dataSources: {
+            movieAPI: new MovieAPI(),
+            smartphoneAPI: new SmartphoneAPI()
+          }
+        })
       })
-    })
-  );
+    );
 
-  app.get('/', (req, res) => {
-    res.redirect('/graphql');
-  });
+    app.get('/', (req, res) => {
+      res.redirect('/graphql');
+    });
 
-  await new Promise((resolve) => httpServer.listen({ port: 5000, host: '0.0.0.0' }, resolve));
-  console.log(`🚀 Server ready at http://localhost:5000/graphql`);
+    await new Promise((resolve) => httpServer.listen({ port: 5000, host: '0.0.0.0' }, resolve));
+    console.log(`🚀 Server ready at http://localhost:5000/graphql`);
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
 }
 
-startApolloServer().catch(console.error);
+startApolloServer().catch(error => {
+  console.error('Unhandled server error:', error);
+  process.exit(1);
+});
