@@ -23,28 +23,25 @@ class MovieAPI extends RESTDataSource {
     };
   }
 
-  async getMovie(id) {
-    const data = await this.get(`/search/${id}`);
+  formatMovie(data) {
     return {
       id: data.id,
-      name: data.title,
-      brand: data.director,
-      year: data.year,
-      description: data.genre,
-      imageUrl: data.posterUrl
+      name: data.title || 'Unknown Title',
+      brand: data.director || 'Unknown Director', // Ensure brand (director) is never null
+      year: data.year || new Date().getFullYear(),
+      description: data.genre || '',
+      imageUrl: data.posterUrl || ''
     };
+  }
+
+  async getMovie(id) {
+    const data = await this.get(`/search/${id}`);
+    return this.formatMovie(data);
   }
 
   async getMovies() {
     const response = await this.get(`/search`);
-    return response.map(movie => ({
-      id: movie.id,
-      name: movie.title,
-      brand: movie.director,
-      year: movie.year,
-      description: movie.genre,
-      imageUrl: movie.posterUrl
-    }));
+    return response.map(movie => this.formatMovie(movie));
   }
 }
 
