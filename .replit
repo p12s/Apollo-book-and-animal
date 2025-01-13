@@ -24,7 +24,6 @@ task = "packager.installForAll"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "node server.js"
-waitForPort = 5000
 
 [[workflows.workflow]]
 name = "Apollo GraphQL Service"

@@ -12,11 +12,13 @@ const { parse } = require('graphql');
 // Read schema files
 try {
   console.log('Reading schema files...');
-  const movieSchema = readFileSync('./src/models/movie.graphql', 'utf8');
-  const smartphoneSchema = readFileSync('./src/models/smartphone.graphql', 'utf8');
+  const baseSchema = readFileSync('./src/subgraphs/base.graphql', 'utf8');
+  const movieSchema = readFileSync('./src/subgraphs/movie.graphql', 'utf8');
+  const smartphoneSchema = readFileSync('./src/subgraphs/smartphone.graphql', 'utf8');
+  const sharedSchema = readFileSync('./src/subgraphs/shared.graphql', 'utf8');
 
-  // Combine schemas
-  const combinedSchema = `${movieSchema}\n${smartphoneSchema}`;
+  // Combine schemas in correct order
+  const combinedSchema = `${baseSchema}\n${movieSchema}\n${smartphoneSchema}\n${sharedSchema}`;
 
   console.log('Schema files loaded successfully');
 
@@ -32,8 +34,8 @@ try {
           resolvers: {
             Query: {
               combinedData2: async (_, { movieId, smartphoneId }, { dataSources }) => {
-                const movie = await dataSources.movieService.movie(movieId);
-                const smartphone = await dataSources.smartphoneService.smartphone(smartphoneId);
+                const movie = await dataSources.movieService.getMovie(movieId);
+                const smartphone = await dataSources.smartphoneService.getSmartphone(smartphoneId);
                 return { movie, smartphone };
               }
             }

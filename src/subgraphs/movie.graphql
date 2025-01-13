@@ -1,20 +1,3 @@
-extend schema
-  @link(url: "https://specs.apollo.dev/federation/v2.0")
-  @link(
-    url: "https://specs.apollo.dev/connect/v0.1"
-    import: ["@connect", "@source"]
-  )
-
-@source(
-  name: "movieService"
-  http: {
-    baseURL: "https://movie-tracker-socrations.replit.app/api/movies"
-    headers: [
-      { name: "Authorization", value: "Bearer 12345-this-is-secret-token" }
-    ]
-  }
-)
-
 type Movie @key(fields: "id") {
   id: ID!
   name: String!
@@ -24,12 +7,7 @@ type Movie @key(fields: "id") {
   imageUrl: String
 }
 
-type CombinedResponse2 {
-  movie: Movie
-  smartphone: Smartphone
-}
-
-type Query {
+extend type Query {
   movies: [Movie]
     @connect(
       source: "movieService"
@@ -58,3 +36,13 @@ type Query {
       """
     )
 }
+
+@source(
+  name: "movieService"
+  http: {
+    baseURL: "https://movie-tracker-socrations.replit.app/api/movies"
+    headers: [
+      { name: "Authorization", value: "Bearer 12345-this-is-secret-token" }
+    ]
+  }
+)
