@@ -16,8 +16,8 @@ class MovieAPI extends RESTDataSource {
     this.baseURL = 'https://movie-tracker-socrations.replit.app/api/movies';
   }
 
-  willSendRequest(request) {
-    request.headers['Authorization'] = 'Bearer 12345-this-is-secret-token';
+  willSendRequest(path, request) {
+    request.headers.set('Authorization', 'Bearer 12345-this-is-secret-token');
   }
 
   async getMovie(id) {
@@ -41,8 +41,8 @@ class SmartphoneAPI extends RESTDataSource {
     this.baseURL = 'https://smartphone-rest-socrations.replit.app/api/smartphones';
   }
 
-  willSendRequest(request) {
-    request.headers['Authorization'] = 'Bearer 54321-this-is-secret-token';
+  willSendRequest(path, request) {
+    request.headers.set('Authorization', 'Bearer 54321-this-is-secret-token');
   }
 
   async getSmartphone(id) {
