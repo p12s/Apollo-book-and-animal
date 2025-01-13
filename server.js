@@ -1,6 +1,5 @@
 const { ApolloServer } = require('@apollo/server');
 const { expressMiddleware } = require('@apollo/server/express4');
-const { ApolloGateway } = require('@apollo/gateway');
 const { ApolloServerPluginDrainHttpServer } = require('@apollo/server/plugin/drainHttpServer');
 const express = require('express');
 const http = require('http');
@@ -10,6 +9,8 @@ const { readFileSync } = require('fs');
 
 const BookAPI = require('./src/datasources/BookAPI');
 const AnimalAPI = require('./src/datasources/AnimalAPI');
+const MovieAPI = require('./src/datasources/MovieAPI');
+const SmartphoneAPI = require('./src/datasources/SmartphoneAPI');
 
 const typeDefs = readFileSync('./supergraph.graphql', 'utf8');
 
@@ -38,6 +39,17 @@ const resolvers = {
                 animal
             };
         },
+        combinedData2: async (_, { movieId, smartphoneId }, { dataSources }) => {
+            const [movie, smartphone] = await Promise.all([
+                dataSources.movieAPI.getMovie(movieId),
+                dataSources.smartphoneAPI.getSmartphone(smartphoneId)
+            ]);
+
+            return {
+                movie,
+                smartphone
+            };
+        },
     },
 };
 
@@ -63,9 +75,11 @@ async function startApolloServer() {
                 const dataSources = {
                     bookAPI: new BookAPI(),
                     animalAPI: new AnimalAPI(),
+                    movieAPI: new MovieAPI(),
+                    smartphoneAPI: new SmartphoneAPI(),
                 };
 
-                // Set authentication tokens
+                // Set authentication tokens for each service
                 dataSources.bookAPI.context = { 
                     bookAuth: req.headers['x-book-auth']?.replace('Bearer ', '') || ''
                 };

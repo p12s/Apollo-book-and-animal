@@ -19,15 +19,40 @@ type Animal {
   health_status: String
 }
 
+type Movie {
+  id: ID!
+  name: String!
+  brand: String!
+  year: Int!
+  description: String
+  imageUrl: String
+}
+
+type Smartphone {
+  id: ID!
+  name: String!
+  brand: String!
+  year: Int!
+  description: String
+  price: Float
+  imageUrl: String
+}
+
 type Query {
   books: [Book]
   book(id: ID!): Book
   animals: [Animal]
   animal(id: ID!): Animal
   combinedData(bookId: ID!, animalId: ID!): CombinedResponse
+  combinedData2(movieId: ID!, smartphoneId: ID!): CombinedResponse2
 }
 
 type CombinedResponse {
   book: Book
   animal: Animal
+}
+
+type CombinedResponse2 {
+  movie: Movie
+  smartphone: Smartphone
 }
