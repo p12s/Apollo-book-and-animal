@@ -23,9 +23,7 @@ type CombinedResponse2 {
 }
 
 type Query {
-  movies: [Movie]
   movie(id: ID!): Movie
-  smartphones: [Smartphone]
   smartphone(id: ID!): Smartphone
   combinedData2(movieId: ID!, smartphoneId: ID!): CombinedResponse2
 }
